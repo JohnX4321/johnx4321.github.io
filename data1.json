@@ -1,0 +1,39 @@
+{
+	"Engineering": 
+	[
+	{
+	"_id":"8a550432a",
+	"name":"Sudha Mathematics",
+	"author":"KSC",
+	"Price":350,
+	"Quantity":0,
+	"Ratings":"3.5"
+	},
+	{
+	"_id":"8a550432b",
+	"name":"Sudha Physics",
+	"author":"KSC",
+	"Price":275,
+	"Quantity":0,
+	"Ratings":"4"
+	}
+	],
+	"Medical": [
+	{
+		"_id":"8m550432a",
+	"name":"Sudha Biology",
+	"author":"KSC",
+	"Price":350,
+	"Quantity":0,
+	"Ratings":"4"
+	},
+	{
+	"_id":"8m550432b",
+	"name":"Sudha Math Bio",
+	"author":"KSC",
+	"Price":350,
+	"Quantity":0,
+	"Ratings":"3.8"
+	}
+	]
+}
