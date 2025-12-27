@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Code Editor – Programming Ocean Academy</title>
+  <meta name="description" content="Interactive web code editor supporting HTML, CSS, and JavaScript with live preview and simple validation tests inside the browser." />
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <style>
+    :root{
+    --bg:#0f1221;
+    --body-bg: #0b0f1d;
+    --panel:#14182b;
+    --muted:#8b93a7;
+    --txt:#e9ecf1;
+    --brand:#7dd3fc;
+    --brand-2:#60a5fa;
+    --ok:#22c55e;
+    --warn:#eab308;
+    --err:#ef4444;
+    --radius:18px; 
+    --gap:14px;
+}
+
+
+*{
+    box-sizing:border-box
+}
+
+
+html, body{
+    height: 100%;
+}
+
+
+body{
+  font-family: sans-serif; 
+  background:linear-gradient(180deg, var(--body-bg), var(--bg) 35%); 
+  color: var(--txt);
+}
+
+
+header{
+  padding: 20px;
+  background:linear-gradient(90deg, rgba(96,165,250,.15), rgba(125,211,252,.1)); 
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+
+
+.container{
+    max-width: 1200px;
+    margin-inline: auto;
+    padding:14px;
+    justify-content:space-between;
+}
+
+
+.brand{
+    display: flex;
+    align-items: center;
+    gap: 10px; 
+    font-weight: 700;
+}
+
+
+.brand .logo{
+     inline-size: 36px;
+    block-size: 36px;
+    border-radius: 10px;
+
+  /* one-shot shorthand prevents other background props from overriding */
+  background: url("https://programming-ocean.com/code-editors/newlogo.png")
+              center / cover no-repeat;
+}
+
+
+.title{
+    font-size: clamp(18px, 2vw, 22px)
+}
+
+
+main{
+    max-width: 1516px;
+    margin-inline: auto;
+    padding: 18px;
+    display: grid;
+    grid-template-columns: 280px 1fr 360px;
+    gap: var(--gap);
+}
+
+
+@media (max-width: 1100px){
+     main{
+        grid-template-columns: 1fr;
+    }
+}
+
+
+.card{
+  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03)); 
+  border: 1px solid rgba(255,255,255,.1); 
+  border-radius:var(--radius); 
+  box-shadow: 0 10px 30px rgba(0,0,0,.25)
+}
+
+.panel{
+    padding:16px
+}
+
+
+h2, h3{
+    margin:0 0 12px
+}
+
+
+.muted{
+    color:var(--muted);
+     font-size:13px
+}
+
+
+.stack{
+    display:flex;
+    flex-direction:column;
+    gap: 10px;
+}
+
+
+.row{
+    display: flex;
+    align-items: center;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:space-between; 
+}
+
+.btn{
+  appearance:none; 
+  border:none; 
+  background:linear-gradient(180deg, var(--brand-2), var(--brand)); 
+  color:#08111f; 
+  font-weight:700; 
+  padding:10px 14px; 
+  border-radius:12px; 
+  cursor:pointer; 
+  box-shadow:0 10px 24px rgba(96,165,250,.35);
+}
+
+
+.btn.secondary{
+  background:transparent; 
+  border:1px solid rgba(255,255,255,.15); 
+  color:var(--txt); 
+  box-shadow:none
+}
+
+
+.btn.warn{
+    background:linear-gradient(180deg, #f59e0b, #eab308);
+}
+
+
+.btn.ok{
+    background:linear-gradient(180deg, #34d399, #22c55e);
+}
+
+.btn.err{
+    background:linear-gradient(180deg, #fb7185, #ef4444);
+}
+
+
+.select, select, .text{
+  background:rgba(255,255,255,.03); 
+  border:1px solid rgba(255,255,255,.12); 
+  color:var(--txt); 
+  padding:10px 12px; 
+  border-radius:12px
+}
+
+
+textarea.text{
+    width:100%;
+     min-height:120px;
+}
+
+
+.tabs{
+    display:flex;
+     gap:8px;
+    flex-wrap:wrap;
+}
+
+
+.tab{
+  padding:8px 12px; 
+  border-radius:10px; 
+  border:1px solid rgba(255,255,255,.14); 
+  background:rgba(255,255,255,.03); 
+  cursor:pointer; 
+  font-weight:700; 
+  color:#FFF !important;
+}
+
+
+.tab.active{
+  background:linear-gradient(180deg, rgba(125,211,252,.18), rgba(96,165,250,.18)); 
+  color:#00FF00 !important;
+}
+
+
+.editor-wrap{
+  position:relative; 
+  border:1px solid rgba(255,255,255,.12); 
+  border-radius:14px; 
+  overflow:hidden; 
+  min-height:280px; 
+  background:#0b1020
+}
+
+.editor{
+  
+  inline-size:100%; 
+  
+  block-size:380px
+}
+
+iframe.preview{
+  inline-size:100%; 
+  block-size:380px; 
+  border:1px solid rgba(255,255,255,.12); 
+  border-radius:14px; 
+  background:white
+}
+
+
+.out{
+  /* font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Cascadia Code", "DejaVu Sans Mono", monospace;  */
+  background:#0a0e1a; 
+  border:1px solid rgba(255,255,255,.12); 
+  border-radius:12px; 
+  padding:10px; 
+  min-height:160px; 
+  overflow:auto; 
+  white-space:pre-wrap
+}
+
+
+
+.footer{opacity:.7;
+   font-size:12px;
+    text-align:center;
+     padding:12px}
+
+
+.badge{
+  font-size:12px; 
+  padding:4px 8px; 
+  border-radius:10px; 
+  background:rgba(255,255,255,.08); 
+  border:1px solid rgba(255,255,255,.14)
+}
+
+
+.kbd{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Cascadia Code", monospace; 
+  background:#0e1324; 
+  border:1px solid rgba(255,255,255,.15); 
+  border-radius:8px; 
+  padding:2px 6px
+}
+
+
+label{
+    font-size:13px; 
+    color:var(--muted);
+}
+  </style>
+</head>
+
+<body>
+
+
+  <header>
+    <div class="container row">
+      
+      <div class="brand">
+
+        <div class="logo"></div>
+
+        <div class="title">Code Editor – Live In Browser</div>
+      
+      </div>
+
+      <div class="row">
+        <button class="btn secondary" id="saveBtn" title="Save work locally"><span>Save</span></button>
+        <button class="btn secondary" id="loadBtn" title="Load work file"><span>Load</span></button>
+        <input id="openFile" type="file" accept="application/json" hidden>
+      </div>
+
+
+    </div>
+  </header>
+
+  <main>
+
+
+    <!-- Left panel: Task description and settings -->
+    <aside class="card panel stack">
+      <h2>Task / Assignment</h2>
+
+      <textarea id="assignment" class="text" placeholder="Write the task description here..."></textarea>
+
+      <div class="stack">
+        <label for="testArea">Validation tests (JavaScript only – optional)</label>
+        <textarea id="testArea" class="text" placeholder="Write simple tests to append after the student's code to check the solution."></textarea>
+      </div>
+
+      <div class="muted">
+        Tip: <span class="kbd">Ctrl</span> + <span class="kbd">S</span> to save,
+        <span class="kbd">Ctrl</span> + <span class="kbd">Enter</span> to run.
+      </div>
+
+    </aside>
+
+    <!-- Middle: Editors and preview -->
+    <section class="stack" id="web-only">
+      <div id="webEditors" class="stack card panel">
+        <div class="row">
+          <h2>HTML / CSS / JS</h2>
+          <div class="row">
+            <button class="btn ok" id="runWeb">Run</button>
+            <button class="btn secondary" id="openPreview">Open preview in window</button>
+          </div>
+        </div>
+
+        <div class="tabs" id="webTabs" role="tablist" aria-label="Web editors">
+          <button class="tab active" role="tab" aria-selected="true" tabindex="0" data-pane="html">HTML</button>
+          <button class="tab" role="tab" aria-selected="false" tabindex="-1" data-pane="css">CSS</button>
+          <button class="tab" role="tab" aria-selected="false" tabindex="-1" data-pane="js">JavaScript</button>
+        </div>
+
+        <!-- Link each editor to a clear panel name -->
+        <div class="editor-wrap" data-pane="html"><div id="ed_html" class="editor"></div></div>
+        <div class="editor-wrap" data-pane="css" hidden><div id="ed_css" class="editor"></div></div>
+        <div class="editor-wrap" data-pane="js" hidden><div id="ed_js" class="editor"></div></div>
+
+        <div class="stack">
+          <h3>Preview</h3>
+          <iframe id="preview" class="preview" sandbox="allow-scripts allow-same-origin allow-modals"></iframe>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right: Output and log -->
+    <aside class="card panel stack">
+      <h2>Output</h2>
+      <div id="output" class="out" aria-live="polite"></div>
+      <div class="row">
+        <button class="btn warn" id="runTests">Run with tests</button>
+        <button class="btn secondary" id="clearOut">Clear log</button>
+      </div>
+      <h3>Notes</h3>
+      <ul class="muted" style="margin:0 0 8px 0; padding-inline-start:18px">
+        <li>Everything runs inside the browser in a sandbox.</li>
+        <li>You can save the work as a JSON file and restore it.</li>
+      </ul>
+    </aside>
+
+  </main>
+
+  <div class="footer">© 2025 Programming Ocean Academy — All rights reserved</div>
+
+  <!-- External libraries: Ace only -->
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.43.2/ace.js"
+    integrity="sha512-ZIa+FlPaGDSM+lTl9JaxnQvcfma7ETsOHd9Thbhp5u4RX1uYiDNW7XvUrXv4dJSPetXbiTzWilHEkSg4YpmltQ=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+    onerror="(function(){var s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/ace-builds@1.43.2/src-min/ace.js'; document.head.appendChild(s);}())">
+  </script>
+  
+
+  <script>
+    // ================== Utilities ==================
+const $  = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const out = $('#output');
+const preview = $('#preview');
+const STORAGE_KEY = 'academy-codelab-web';
+
+
+const escapeHtml = s =>
+  String(s).replace(/[&<>"]/g, c => ({
+
+    '&':'&amp;',
+
+    '<':'&lt;',
+
+    '>':'&gt;',
+
+    '"':'&quot;'
+}[c]
+));
+
+
+function log(msg, type='info'){
+  const color = type==='error' ? 'var(--err)' : type==='warn' ? 'var(--warn)' : 'var(--brand)';
+
+  const time = new Date().toLocaleTimeString();
+
+  const line = document.createElement('div');
+
+  line.innerHTML = `<span style="color:${color}">[${time}]</span> ${escapeHtml(msg)}`;
+
+  out.appendChild(line); out.scrollTop = out.scrollHeight;
+}
+
+
+function clearOut(){ out.innerHTML=''; }
+
+$('#clearOut')?.addEventListener('click', clearOut);
+
+
+// ================== ACE Editors (HTML/CSS/JS) ==================
+function makeEditor(id, mode){
+
+  const ed = ace.edit(id, {
+    theme:'ace/theme/dracula',
+    mode, tabSize:2, useSoftTabs:true, showPrintMargin:false, wrap:true
+  });
+
+
+  ed.session.setUseWrapMode(true);
+  ed.commands.addCommand({
+    name:'run', bindKey:{win:'Ctrl-Enter',mac:'Command-Enter'},
+    exec(){ runWeb(false); }
+  });
+
+
+  ed.commands.addCommand({
+    name:'save', bindKey:{win:'Ctrl-S',mac:'Command-S'},
+    exec(){ saveProject(); }
+  });
+
+
+  return ed;
+}
+
+const ed_html = makeEditor('ed_html','ace/mode/html');
+const ed_css  = makeEditor('ed_css','ace/mode/css');
+const ed_js   = makeEditor('ed_js','ace/mode/javascript');
+
+// ================== Tabs (robust + a11y) ==================
+const TAB_ORDER = ['html','css','js'];
+
+const wraps   = Object.fromEntries($$('#webEditors .editor-wrap').map(w => [w.dataset.pane, w]));
+
+const editors = { html: ed_html, css: ed_css, js: ed_js };
+
+function activePane(){
+  const t = $('#webTabs .tab.active');
+  return t ? t.dataset.pane : 'html';
+}
+
+
+function showPane(name){
+
+  TAB_ORDER.forEach(k => { if(wraps[k]) wraps[k].hidden = (k !== name); });
+  $$('#webTabs .tab').forEach(t => {
+    const on = t.dataset.pane === name;
+    t.classList.toggle('active', on);
+    t.setAttribute('aria-selected', on);
+    t.tabIndex = on ? 0 : -1;
+  });
+
+
+  requestAnimationFrame(() => {
+    const ed = editors[name];
+    if(ed && ed.resize){ ed.resize(true); ed.focus(); }
+  });
+
+}
+
+
+$('#webTabs')?.addEventListener('click', (e)=>{
+  const btn = e.target.closest('.tab'); if(!btn) return;
+  showPane(btn.dataset.pane);
+});
+
+
+$('#webTabs')?.addEventListener('keydown', (e)=>{
+  const idx = TAB_ORDER.indexOf(activePane());
+  if(e.key==='ArrowLeft' || e.key==='ArrowRight'){
+    const delta = e.key==='ArrowLeft' ? -1 : 1;
+    showPane(TAB_ORDER[(idx+delta+TAB_ORDER.length)%TAB_ORDER.length]);
+    e.preventDefault();
+  }
+});
+
+showPane('html');
+
+// ================== Preview ==================
+function buildWebSrcdoc(withTests=false){
+  const html  = ed_html.getValue();
+  const css   = ed_css.getValue();
+  const js    = ed_js.getValue();
+  const tests = ($('#testArea')?.value || '').trim();
+
+  return `<!doctype html>
+  
+  <html lang="en" dir="ltr">
+  
+
+
+<head>
+
+<meta charset="utf-8">
+
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+
+<style>${css}\n</style></head>
+
+<body>${html}
+
+<script>
+
+try{
+
+${js}
+
+${withTests && tests ? `\n/* tests */\n${tests}` : ''}
+
+}catch(e){console.error(e)}<\/script>
+
+</body>
+
+</html>`;
+}
+
+
+function runWeb(withTests=false){
+  preview.srcdoc = buildWebSrcdoc(withTests);
+  log(withTests ? 'Run with tests.' : 'Web preview updated.');
+}
+
+$('#runWeb')?.addEventListener('click', ()=>runWeb(false));
+
+
+$('#runTests')?.addEventListener('click', ()=>runWeb(true));
+
+
+$('#openPreview')?.addEventListener('click', ()=>{
+
+  const src = buildWebSrcdoc(false);
+
+  const w = window.open('about:blank');
+
+  w.document.open(); w.document.write(src); w.document.close();
+});
+
+// ================== Save / Load (Web-only) ==================
+function projectJSON(){
+  return {
+    version: 1,
+    kind: 'web-only',
+    assignment: $('#assignment')?.value || '',
+    test: $('#testArea')?.value || '',
+    html: ed_html.getValue(),
+    css:  ed_css.getValue(),
+    js:   ed_js.getValue()
+  };
+}
+
+
+function loadProject(obj){
+
+  try{
+
+    if($('#assignment')) $('#assignment').value = obj.assignment || '';
+
+    if($('#testArea'))   $('#testArea').value   = obj.test || '';
+
+    ed_html.setValue(obj.html || '', -1);
+
+    ed_css.setValue(obj.css   || '', -1);
+
+    ed_js.setValue(obj.js     || '', -1);
+
+    log('Web project loaded.');
+
+  }catch(e){ log('Unable to load project: '+e, 'error'); }
+
+}
+
+
+function setDefaultContent(){
+  ed_html.setValue(`<!-- Welcome card -->
+<section class="card" style="max-width:520px;margin:24px auto;padding:18px;text-align:center">
+  <h1>Welcome to the Academy</h1>
+  <p>This example runs locally in the browser.</p>
+  <button id="btn">Try me</button>
+</section>`, -1);
+
+  ed_css.setValue(`body{font-family:system-ui;background:#f7fafc;margin:0}
+h1{color:#0f172a}
+#btn{padding:.75rem 1rem;border:0;border-radius:10px;background:#60a5fa;color:#08111f;font-weight:700}`, -1);
+
+  ed_js.setValue(`document.getElementById('btn').addEventListener('click',()=>alert('Well done!'));
+console.log('Hello from JavaScript!');`, -1);
+}
+
+
+function saveProject(){
+  try{
+    const data = JSON.stringify(projectJSON(), null, 2);
+    localStorage.setItem(STORAGE_KEY, data);
+    const blob = new Blob([data], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'academy-web.json';
+    a.click();
+    log('Saved locally and downloaded JSON file.');
+  }catch(e){ log('Unable to save: '+e, 'error'); }
+}
+
+
+$('#saveBtn')?.addEventListener('click', saveProject);
+$('#loadBtn')?.addEventListener('click', ()=> $('#openFile').click());
+$('#openFile')?.addEventListener('change', async (e)=>{
+  const f = e.target.files?.[0]; if(!f) return;
+  try{ const obj = JSON.parse(await f.text()); loadProject(obj); }
+  catch(err){ log('Invalid project file', 'error'); }
+});
+
+// ================== Initial load ==================
+try{
+  const cache = localStorage.getItem(STORAGE_KEY);
+  if(cache){ loadProject(JSON.parse(cache)); }
+  else { setDefaultContent(); }
+}catch{ setDefaultContent(); }
+
+log('Ready — Web-only Editor (HTML/CSS/JS) ✨');
+
+
+
+function normalizeProject(raw){
+  if (!raw || typeof raw !== 'object') throw new Error('Not an object');
+
+  // accept old/new shapes; fall back to empty strings
+  const html = typeof raw.html === 'string' ? raw.html : (raw.web && raw.web.html) || '';
+  const css  = typeof raw.css  === 'string' ? raw.css  : (raw.web && raw.web.css ) || '';
+  const js   = typeof raw.js   === 'string' ? raw.js   : (raw.web && raw.web.js  ) || '';
+
+  return {
+    version: 1,
+    kind: 'web-only',
+    assignment: typeof raw.assignment === 'string' ? raw.assignment : (raw.task || ''),
+    test:       typeof raw.test       === 'string' ? raw.test       : (raw.tests || ''),
+    html, css, js
+  };
+}
+
+function safeSetValue(id, val){
+  const el = document.getElementById(id);
+  if (el) { el.value = val; }
+  else { log(`Warning: #${id} not found; skipped setting value`, 'warn'); }
+}
+
+function loadProject(raw){
+  const proj = normalizeProject(raw);
+  safeSetValue('assignment', proj.assignment);
+  safeSetValue('testArea',   proj.test);
+  if (typeof ed_html?.setValue === 'function') ed_html.setValue(proj.html, -1);
+  if (typeof ed_css?.setValue  === 'function') ed_css.setValue(proj.css, -1);
+  if (typeof ed_js?.setValue   === 'function') ed_js.setValue(proj.js, -1);
+  log('Project loaded.');
+}
+
+
+// Buttons
+
+
+// ===== Initial restore (after DOM is parsed) =====
+window.addEventListener('DOMContentLoaded', () => {
+  try{
+    const cached = localStorage.getItem(STORAGE_KEY);
+    if (cached) {
+      const obj = JSON.parse(cached);
+      loadProject(obj);
+    } else {
+      // seed defaults if nothing cached
+      if (!document.getElementById('assignment')) return;
+      // your default seeding function if you have one:
+      // setDefaultContent();
+    }
+  }catch(e){
+    log('Skipping auto-restore: ' + e, 'warn');
+  }
+});
+  </script>
+</body>
+</html>
